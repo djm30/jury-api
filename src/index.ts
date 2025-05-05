@@ -9,7 +9,7 @@ import puppeteer from "puppeteer";
 import { systemPrompt } from "./util/prompt";
 
 const app = express();
-const port = 6543;
+const PORT = 6543;
 
 const db = drizzle(process.env.DB_FILE_NAME!);
 type JuryTimeTable = typeof juryTimeTable.$inferInsert;
@@ -42,19 +42,24 @@ const getItem = async (day: Date) => {
 app.use((req, res, next) => {
     const authHeader = req.headers["authorization"];
 
-    if (!authHeader || authHeader !== `Bearer ${API_SECRET}`) {
-        res.status(401).json({ message: "Unauthorized" });
-        console.warn(`
-            [${new Date().toISOString()}] Unauthorized request:
+    const requestLog = `
+            [${new Date().toISOString()}] 
             IP: ${req.ip}
             Method: ${req.method}
             Path: ${req.originalUrl}
             Auth Header Present: ${!!authHeader}
             User-Agent: ${req.headers["user-agent"]}
-        `);
+        `;
 
+    if (!authHeader || authHeader !== `Bearer ${API_SECRET}`) {
+        console.warn("Unauthorised");
+        console.warn(requestLog);
+
+        res.status(401).json({ message: "Unauthorized" });
         return;
     }
+
+    console.log(requestLog);
 
     next();
 });
@@ -64,7 +69,9 @@ app.get("/health", async (req, res) => {
 });
 
 app.get("/check-duty", async (req, res) => {
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({
+        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    });
     const page = await browser.newPage();
     await page.goto(COURTHOUSE_URL, { waitUntil: "networkidle2" });
 
@@ -155,6 +162,7 @@ app.post("/arrive-home", async (req, res) => {
     res.status(200).json({ message: "Time logged" });
 });
 
-app.listen(port, (error) => {
-    console.error(error);
+app.listen(PORT, function (err) {
+    if (err) console.log("Error in server setup");
+    console.log("Server listening on Port", PORT);
 });
