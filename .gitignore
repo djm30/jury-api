@@ -1,6 +1,7 @@
 .env
 node_modules
-src/db/db.db
+db.db
 src/example_input.json
 src/util/html.ts
 .DS_Store
+dist
