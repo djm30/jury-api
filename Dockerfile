@@ -1,9 +1,4 @@
-FROM node:22-slim
-
-RUN apt-get update && apt-get install -yq chromium
-
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+FROM mcr.microsoft.com/playwright:v1.52.0-noble-arm64
 
 WORKDIR /app
 

@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 import { juryTimeTable } from "./db/schema";
 import * as cheerio from "cheerio";
 import OpenAI from "openai";
-import puppeteer from "puppeteer";
+import { chromium } from "@playwright/test";
 import { systemPrompt } from "./util/prompt";
 
 const app = express();
@@ -69,13 +69,16 @@ app.get("/health", async (req, res) => {
 });
 
 app.get("/check-duty", async (req, res) => {
-    const browser = await puppeteer.launch({
-        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    const browser = await chromium.launch({
+        args: ["--no-sandbox"],
     });
-    const page = await browser.newPage();
-    await page.goto(COURTHOUSE_URL, { waitUntil: "networkidle2" });
+    const context = await browser.newContext();
+    const page = await context.newPage();
 
+    await page.goto(COURTHOUSE_URL, { waitUntil: "networkidle" });
     const content = await page.content();
+
+    await browser.close();
 
     const $ = cheerio.load(content);
     const craigavonSection = $(`h2:contains("${COURTHOUSE_HEADING}")`).next(".x-scroll");
@@ -97,7 +100,7 @@ app.get("/check-duty", async (req, res) => {
         summonsInfo: summonsInfo,
     };
 
-    console.log("Successfully parsed JSON info");
+    console.log(summonsInfo);
 
     const response = await deepseek.chat.completions.create({
         model: "deepseek-chat",
