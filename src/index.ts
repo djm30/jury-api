@@ -100,8 +100,6 @@ app.get("/check-duty", async (req, res) => {
         summonsInfo: summonsInfo,
     };
 
-    console.log(summonsInfo);
-
     const response = await deepseek.chat.completions.create({
         model: "deepseek-chat",
         messages: [
