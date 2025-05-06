@@ -81,10 +81,10 @@ app.get("/check-duty", async (req, res) => {
     await browser.close();
 
     const $ = cheerio.load(content);
-    const craigavonSection = $(`h2:contains("${COURTHOUSE_HEADING}")`).next(".x-scroll");
+    const courthouseSection = $(`h2:contains("${COURTHOUSE_HEADING}")`).next(".x-scroll");
 
     const summonsInfo: JurySiteInfo[] = [];
-    craigavonSection.find("tbody tr").each((_, element) => {
+    courthouseSection.find("tbody tr").each((_, element) => {
         const panelNumbers = $(element).find("td:nth-child(1)").text().trim();
         const date = $(element).find("td:nth-child(2)").text().trim();
         const details = $(element).find("td:nth-child(3)").text().trim();
